@@ -33,14 +33,14 @@ async function findById(scheme_id) { // EXERCISE B
     .orderBy('st.step_number')
 
   const scheme = {
-    scheme_id: result[0].id,
+    scheme_id: result[0].scheme_id,
     scheme_name: result[0].scheme_name,
     steps:[]
   }
 
   result.forEach(row => {
     if(row.step_id) {
-      result.steps.push({
+      scheme.steps.push({
         step_id: row.step_id,
         step_number: row.step_number,
         instructions: row.instructions
@@ -48,7 +48,7 @@ async function findById(scheme_id) { // EXERCISE B
     }
   })
 
-  return result
+  return scheme
   /*
     1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
 
@@ -116,7 +116,15 @@ async function findById(scheme_id) { // EXERCISE B
   */
 }
 
-function findSteps(scheme_id) { // EXERCISE C
+async function findSteps(scheme_id) { // EXERCISE C
+  const result = await db('schemes as sc')
+    .leftJoin('steps as st', 'sc.scheme_id', 'st.scheme_id')
+    .select('st.step_id', 'st.step_number', 'instructions', 'sc.scheme_name')
+    .where('sc.scheme_id', scheme_id)
+    .orderBy('step_number')
+
+    if (!result[0].step_id) return []
+    return result
   /*
     1C- Build a query in Knex that returns the following data.
     The steps should be sorted by step_number, and the array
